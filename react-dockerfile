@@ -1,0 +1,22 @@
+FROM  node:14.17.6-buster AS build-env 
+# Set working directory
+WORKDIR /app
+# Copy manifest
+#COPY . .
+COPY package.json package-lock.json ./
+RUN npm config set registry https://noderepo/repository/npm-group
+# Install dependencies
+RUN npm install
+# Copy project
+COPY . .
+#COPY . /app/
+# Build project
+RUN npm run build:all
+# Set base image
+FROM nginx
+# Listen on port 80 at runtime
+EXPOSE 80
+COPY nginx.conf /etc/nginx
+# Copy project
+COPY --from=build-env /app/dist/ /usr/share/nginx/html
+# COPY /nginx.conf /etc/nginx/conf.d/default.conf
